@@ -3,7 +3,7 @@
 # GENERAL
 # -------------------------------------------------------------------------------------------------------------------- #
 
-title: 'LVM: Удаление'
+title: 'LVM: Удаление томов'
 description: ''
 icon: 'far fa-file-lines'
 categories:
@@ -41,30 +41,46 @@ slug: 'a1719203-4dff-55e8-954d-b569c6db1720'
 draft: 0
 ---
 
-Удаление томов и разделов {{< tag "LVM" >}}
+Удаление томов {{< tag "LVM" >}}.
 
 <!--more-->
 
-- От-монтировать и удалить логический раздел `documents` из группы томов `data`:
+## Экспорт параметров
+
+- Экспортировать заранее подготовленные общие параметры в переменные окружения:
 
 ```bash
-lv='documents'; vg='data'; umount "/dev/${vg}/${lv}" && lvremove "/dev/${vg}/${lv}"
+export PV='/dev/sdb'; export VG='data'; export LV='documents'
+```
+
+### Параметры
+
+- `PV='/dev/sdb'` - имя физического тома (PV).
+- `VG='data'` - имя группы логических томов (VG).
+- `LV='documents'` - имя логического тома (LV).
+
+## Удаление
+
+- От-монтировать и удалить логический том `documents` из группы томов `data`:
+
+```bash
+umount "/dev/${VG}/${LV}" && lvremove "/dev/${VG}/${LV}"
 ```
 
 - Удалить группу томов `data`:
 
 ```bash
-vg='data'; vgremove "${vg}"
+vgremove "${VG}"
 ```
 
 - Удалить физический том с диска `/dev/sdb`:
 
 ```bash
-pv='/dev/sdb'; pvremove "${pv}"
+pvremove "${PV}"
 ```
 
-- От-монтировать и удалить логический раздел `documents` из группы томов `data`, удалить группу томов `data` и удалить физический том с диска `/dev/sdb`:
+- От-монтировать и удалить логический том `documents` из группы томов `data`, удалить группу томов `data` и удалить физический том с диска `/dev/sdb`:
 
 ```bash
-lv='documents'; vg='data'; pv='/dev/sdb'; umount "/dev/${vg}/${lv}" && lvremove "/dev/${vg}/${lv}" && vgremove "${vg}" && pvremove "${pv}"
+umount "/dev/${VG}/${LV}" && lvremove "/dev/${VG}/${LV}" && vgremove "${VG}" && pvremove "${PV}"
 ```

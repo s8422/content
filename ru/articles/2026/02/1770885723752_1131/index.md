@@ -3,7 +3,7 @@
 # GENERAL
 # -------------------------------------------------------------------------------------------------------------------- #
 
-title: 'LVM: Создание'
+title: 'LVM: Создание томов'
 description: ''
 icon: 'far fa-file-lines'
 categories:
@@ -43,42 +43,52 @@ slug: 'af98cd4b-71b2-57a5-97c5-dbe109a9479b'
 draft: 0
 ---
 
-Создание физических томов и логических разделов {{< tag "LVM" >}}.
+Создание томов {{< tag "LVM" >}}.
 
 <!--more-->
+
+## Экспорт параметров
+
+- Экспортировать заранее подготовленные общие параметры в переменные окружения:
+
+```bash
+export PV='/dev/sdb'; export VG='data'; export LV='documents'; export FS='ext4'; export MNT_DIR="/mnt/${VG}-${LV}"
+```
+
+### Параметры
+
+- `PV='/dev/sdb'` - диск, который будет использоваться в качестве физического тома (PV).
+- `VG='data'` - имя группы логических томов (VG).
+- `LV='documents'` - имя логического тома (LV).
+- `FS='ext4'` - файловая система, используемая на логическом томе (LV).
+- `MNT_DIR="/mnt/${VG}-${LV}"` - путь к директории для монтирования логического тома (LV).
 
 ## Физический том
 
 - Создать физический том и группу томов `data` на диске `/dev/sdb`:
 
 ```bash
-pv='/dev/sdb'; vg='data'; pvcreate "${pv}" && vgcreate "${vg}" "${pv}"
+pvcreate "${PV}" && vgcreate "${VG}" "${PV}"
 ```
 
-## Логический раздел
+## Логический том
 
-- Создать логический раздел `documents` размером `10 GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
+- Создать логический том `documents` размером `10 GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
 
 ```bash
-lv='documents'; vg='data'; size='10G'; fs='ext4'; lvcreate -L "${size}" -n "${lv}" "${vg}" && mkfs.${fs} "/dev/${vg}/${lv}"
+size='10G'; lvcreate -L "${size}" -n "${LV}" "${VG}" && mkfs.${FS} "/dev/${VG}/${LV}"
 ```
 
-- Создать логический раздел `music` размером `20 GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
+- Создать логический том `documents` размером `100% GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
 
 ```bash
-lv='music'; vg='data'; size='20G'; fs='ext4'; lvcreate -L "${size}" -n "${lv}" "${vg}" && mkfs.${fs} "/dev/${vg}/${lv}"
-```
-
-- Создать логический раздел `videos` размером `100% GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
-
-```bash
-lv='videos'; vg='data'; size='100%FREE'; fs='ext4'; lvcreate -l "${size}" -n "${lv}" "${vg}" && mkfs.${fs} "/dev/${vg}/${lv}"
+size='100%FREE'; lvcreate -l "${size}" -n "${LV}" "${VG}" && mkfs.${FS} "/dev/${VG}/${LV}"
 ```
 
 ## Монтирование
 
-- Монтирование логического раздела `documents` группы томов `data` в директорию `/mnt/data-documents` и прописывание в `/etc/fstab` для `ext4`:
+- Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/data-documents` и прописывание в `/etc/fstab` для `ext4`:
 
 ```bash
-lv='documents'; vg='data'; fs='ext4'; dir="/mnt/${vg}-${lv}"; mkdir "${dir}" && echo "/dev/${vg}/${lv} ${dir} ${fs} defaults 0 0" >> '/etc/fstab' && mount "/dev/${vg}/${lv}" "${dir}"
+mkdir "${MNT_DIR}" && echo "/dev/${VG}/${LV} ${MNT_DIR} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "${MNT_DIR}"
 ```

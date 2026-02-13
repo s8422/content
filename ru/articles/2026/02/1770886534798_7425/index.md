@@ -3,7 +3,7 @@
 # GENERAL
 # -------------------------------------------------------------------------------------------------------------------- #
 
-title: 'LVM: Расширение'
+title: 'LVM: Расширение томов'
 description: ''
 icon: 'far fa-file-lines'
 categories:
@@ -42,16 +42,31 @@ slug: '54e17786-d28d-5588-ab23-452b13500fd5'
 draft: 0
 ---
 
-Расширение логического раздела {{< tag "LVM" >}}.
+Расширение логических томов {{< tag "LVM" >}}.
 
 <!--more-->
+
+## Экспорт параметров
+
+- Экспортировать заранее подготовленные общие параметры в переменные окружения:
+
+```bash
+export PV='/dev/sdb'; export VG='data'; export LV='documents'; FS='ext4'
+```
+
+### Параметры
+
+- `PV='/dev/sdb'` - имя физического тома (PV).
+- `VG='data'` - имя группы логических томов (VG).
+- `LV='documents'` - имя логического тома (LV).
+- `FS='ext4'` - файловая система, используемая на логическом томе (LV).
 
 ## Увеличение физического тома
 
 - Провести сканирование указанного устройства на предмет изменённых параметров (в данном случае, размер диска) и увеличить физический том `/dev/sdb`:
 
 ```bash
-pv='/dev/sdb'; echo 1 > "/sys/block/${pv##*/}/device/rescan" && pvresize "${pv}"
+echo 1 > "/sys/block/${PV##*/}/device/rescan" && pvresize "${PV}"
 ```
 
 ## Увеличение логического раздела
@@ -59,11 +74,11 @@ pv='/dev/sdb'; echo 1 > "/sys/block/${pv##*/}/device/rescan" && pvresize "${pv}"
 - Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `8 GB` и расширить файловую систему `ext4`:
 
 ```bash
-lv='documents'; vg='data'; pv='/dev/sdb'; size='+8G'; fs='ext4'; pvresize "${pv}" && lvextend -L "${size}" "/dev/${vg}/${lv}" && { if [[ "${fs}" == 'xfs' ]]; then xfs_growfs -d "/dev/${vg}/${lv}"; else resize2fs "/dev/${vg}/${lv}"; fi; }
+size='+8G'; pvresize "${PV}" && lvextend -L "${size}" "/dev/${VG}/${LV}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "/dev/${VG}/${LV}"; else resize2fs "/dev/${VG}/${LV}"; fi; }
 ```
 
 - Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на максимально возможный и расширить файловую систему `ext4`:
 
 ```bash
-lv='documents'; vg='data'; pv='/dev/sdb'; size='+100%FREE'; fs='ext4'; pvresize "${pv}" && lvextend -l "${size}" "/dev/${vg}/${lv}" && { if [[ "${fs}" == 'xfs' ]]; then xfs_growfs -d "/dev/${vg}/${lv}"; else resize2fs "/dev/${vg}/${lv}"; fi; }
+size='+100%FREE'; pvresize "${PV}" && lvextend -l "${size}" "/dev/${VG}/${LV}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "/dev/${VG}/${LV}"; else resize2fs "/dev/${VG}/${LV}"; fi; }
 ```
