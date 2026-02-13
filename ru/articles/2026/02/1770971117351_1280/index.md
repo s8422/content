@@ -44,16 +44,28 @@ Summary...
 
 <!--more-->
 
+## Экспорт переменных
+
+- Экспортировать заранее подготовленные общие параметры в переменные окружения:
+
+```bash
+export DEV='/dev/sdb'; export FS='ext4'
+```
+
+## Создание раздела
+
 - Создать раздел `/dev/sdb1` на диске `/dev/sdb` с типом файловой системы `ext4`:
 
 ```bash
-parted -s -a optimal -- /dev/sdb mklabel gpt mkpart primary ext4 0% 100% print
+parted -s -a 'optimal' -- "${DEV}" mklabel gpt mkpart primary "${FS}" 0% 100% print
 ```
+
+### Форматирование
 
 - Отформатировать раздел `/dev/sdb1` в файловую систему `ext4`:
 
 ```bash
-mkfs.ext4 '/dev/sdb1'
+mkfs.ext4 "${DEV}1"
 ```
 
 ## Скрипт
@@ -61,5 +73,5 @@ mkfs.ext4 '/dev/sdb1'
 - Создать раздел `/dev/sdb1` на диске `/dev/sdb` с типом файловой системы `ext4` и отформатировать в файловую систему `ext4`:
 
 ```bash
-disk='/dev/sdb'; fs='ext4'; parted -s -a optimal -- "${disk}" mklabel gpt mkpart primary "${fs}" 0% 100% print && mkfs.${fs} "${disk}1"
+parted -s -a 'optimal' -- "${DEV}" mklabel gpt mkpart primary "${FS}" 0% 100% print && mkfs.${fs} "${DEV}1"
 ```

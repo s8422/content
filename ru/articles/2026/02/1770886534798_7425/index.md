@@ -51,7 +51,7 @@ draft: 0
 - Экспортировать заранее подготовленные общие параметры в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export LV='data-documents'; FS='ext4'
+export PV='/dev/sdb'; export LV='data-documents'; export FS='ext4'
 ```
 
 ### Параметры
