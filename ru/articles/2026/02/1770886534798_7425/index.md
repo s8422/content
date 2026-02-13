@@ -51,14 +51,13 @@ draft: 0
 - Экспортировать заранее подготовленные общие параметры в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export VG='data'; export LV='documents'; FS='ext4'
+export PV='/dev/sdb'; export LV='data-documents'; FS='ext4'
 ```
 
 ### Параметры
 
 - `PV='/dev/sdb'` - имя физического тома (PV).
-- `VG='data'` - имя группы логических томов (VG).
-- `LV='documents'` - имя логического тома (LV).
+- `LV='data-documents'` - имя группы логических томов (VG) `data` и логического тома (LV) `documents`.
 - `FS='ext4'` - файловая система, используемая на логическом томе (LV).
 
 ## Увеличение физического тома
@@ -74,11 +73,11 @@ echo 1 > "/sys/block/${PV##*/}/device/rescan" && pvresize "${PV}"
 - Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `8 GB` и расширить файловую систему `ext4`:
 
 ```bash
-size='+8G'; pvresize "${PV}" && lvextend -L "${size}" "/dev/${VG}/${LV}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "/dev/${VG}/${LV}"; else resize2fs "/dev/${VG}/${LV}"; fi; }
+s='+8G'; d="/dev/${LV%%-*}/${LV##*-}"; pvresize "${PV}" && lvextend -L "${s}" "${d}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "${d}"; else resize2fs "${d}"; fi; }
 ```
 
 - Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на максимально возможный и расширить файловую систему `ext4`:
 
 ```bash
-size='+100%FREE'; pvresize "${PV}" && lvextend -l "${size}" "/dev/${VG}/${LV}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "/dev/${VG}/${LV}"; else resize2fs "/dev/${VG}/${LV}"; fi; }
+s='+100%FREE'; d="/dev/${LV%%-*}/${LV##*-}"; pvresize "${PV}" && lvextend -l "${s}" "${d}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "${d}"; else resize2fs "${d}"; fi; }
 ```

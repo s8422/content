@@ -52,23 +52,21 @@ draft: 0
 - Экспортировать заранее подготовленные общие параметры в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export VG='data'; export LV='documents'; export FS='ext4'; export MNT_DIR="/mnt/${VG}-${LV}"
+export PV='/dev/sdb'; export LV='data-documents'; export FS='ext4'
 ```
 
 ### Параметры
 
 - `PV='/dev/sdb'` - диск, который будет использоваться в качестве физического тома (PV).
-- `VG='data'` - имя группы логических томов (VG).
-- `LV='documents'` - имя логического тома (LV).
+- `LV='data-documents'` - имя группы логических томов (VG) `data` и логического тома (LV) `documents`.
 - `FS='ext4'` - файловая система, используемая на логическом томе (LV).
-- `MNT_DIR="/mnt/${VG}-${LV}"` - путь к директории для монтирования логического тома (LV).
 
 ## Физический том
 
 - Создать физический том и группу томов `data` на диске `/dev/sdb`:
 
 ```bash
-pvcreate "${PV}" && vgcreate "${VG}" "${PV}"
+pvcreate "${PV}" && vgcreate "${LV%%-*}" "${PV}"
 ```
 
 ## Логический том
@@ -76,13 +74,13 @@ pvcreate "${PV}" && vgcreate "${VG}" "${PV}"
 - Создать логический том `documents` размером `10 GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
 
 ```bash
-size='10G'; lvcreate -L "${size}" -n "${LV}" "${VG}" && mkfs.${FS} "/dev/${VG}/${LV}"
+s='10G'; lvcreate -L "${s}" -n "${LV##*-}" "${LV%%-*}" && mkfs.${FS} "/dev/${LV%%-*}/${LV##*-}"
 ```
 
 - Создать логический том `documents` размером `100% GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
 
 ```bash
-size='100%FREE'; lvcreate -l "${size}" -n "${LV}" "${VG}" && mkfs.${FS} "/dev/${VG}/${LV}"
+s='100%FREE'; lvcreate -l "${s}" -n "${LV##*-}" "${LV%%-*}" && mkfs.${FS} "/dev/${LV%%-*}/${LV##*-}"
 ```
 
 ## Монтирование
@@ -90,5 +88,5 @@ size='100%FREE'; lvcreate -l "${size}" -n "${LV}" "${VG}" && mkfs.${FS} "/dev/${
 - Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/data-documents` и прописывание в `/etc/fstab` для `ext4`:
 
 ```bash
-mkdir "${MNT_DIR}" && echo "/dev/${VG}/${LV} ${MNT_DIR} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "${MNT_DIR}"
+d="/dev/${LV%%-*}/${LV##*-}"; mkdir "/mnt/${LV}" && echo "${d} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "${d}" "/mnt/${LV}"
 ```

@@ -50,27 +50,26 @@ draft: 0
 - Экспортировать заранее подготовленные общие параметры в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export VG='data'; export LV='documents'
+export PV='/dev/sdb'; export LV='data-documents'
 ```
 
 ### Параметры
 
 - `PV='/dev/sdb'` - имя физического тома (PV).
-- `VG='data'` - имя группы логических томов (VG).
-- `LV='documents'` - имя логического тома (LV).
+- `LV='data-documents'` - имя группы логических томов (VG) `data` и логического тома (LV) `documents`.
 
 ## Удаление
 
 - От-монтировать и удалить логический том `documents` из группы томов `data`:
 
 ```bash
-umount "/dev/${VG}/${LV}" && lvremove "/dev/${VG}/${LV}"
+d="/dev/${LV%%-*}/${LV##*-}"; umount "${d}" && lvremove "${d}"
 ```
 
 - Удалить группу томов `data`:
 
 ```bash
-vgremove "${VG}"
+vgremove "${LV%%-*}"
 ```
 
 - Удалить физический том с диска `/dev/sdb`:
@@ -82,5 +81,5 @@ pvremove "${PV}"
 - От-монтировать и удалить логический том `documents` из группы томов `data`, удалить группу томов `data` и удалить физический том с диска `/dev/sdb`:
 
 ```bash
-umount "/dev/${VG}/${LV}" && lvremove "/dev/${VG}/${LV}" && vgremove "${VG}" && pvremove "${PV}"
+d="/dev/${LV%%-*}/${LV##*-}"; umount "${d}" && lvremove "${d}" && vgremove "${LV%%-*}" && pvremove "${PV}"
 ```

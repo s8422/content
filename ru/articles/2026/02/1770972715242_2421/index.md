@@ -82,14 +82,13 @@ sda               8:0    0   30G  0 disk
 Для начала экспортируем заранее подготовленные параметры в переменные окружения:
 
 ```bash
-export PV='/dev/sda3'; export VG='system'; export LV='root'
+export PV='/dev/sda3'; export LV='system-root'
 ```
 
 ### Параметры
 
 - `PV='/dev/sda3'` - имя физического тома (PV).
-- `VG='system'` - имя группы логических томов (VG).
-- `LV='root'` - имя логического тома (LV).
+- `LV='system-root'` - имя группы логических томов (VG) `system` и логического тома (LV) `root`.
 
 ## Расширение LVM
 
@@ -102,10 +101,11 @@ export PV='/dev/sda3'; export VG='system'; export LV='root'
 Увеличение раздела `root` при помощи одной команды:
 
 ```bash
-echo 1 > "/sys/block/$( echo "${PV##*/}" | sed 's/[0-9]*//g' )/device/rescan" && parted -sf -a 'optimal' -- "${PV//[0-9]/}" "resizepart ${PV//[^0-9]/} 100%" && pvresize "${PV}" && lvextend -l +100%FREE "/dev/${VG}/${LV}"
+echo 1 > "/sys/block/$( echo "${PV##*/}" | sed 's/[0-9]*//g' )/device/rescan" && parted -sf -a 'optimal' -- "${PV//[0-9]/}" "resizepart ${PV//[^0-9]/} 100%" && pvresize "${PV}" && lvextend -l +100%FREE "/dev/${LV%%-*}/${LV##*-}"
 ```
 
 В этой команде имеется 4 под-команды:
+
 - `rescan` - обновить информацию об устройстве `sda`.
 - `parted` - расширить раздел `sda3` на всё свободное место.
 - `pvresize` - расширить физический том **PV**.
@@ -116,13 +116,13 @@ echo 1 > "/sys/block/$( echo "${PV##*/}" | sed 's/[0-9]*//g' )/device/rescan" &&
 Расширить файловую систему `ext4`:
 
 ```bash
-resize2fs "/dev/${VG}/${LV}"
+resize2fs "/dev/${LV%%-*}/${LV##*-}"
 ```
 
 Расширить файловую систему `xfs`:
 
 ```bash
-xfs_growfs -d "/dev/${VG}/${LV}"
+xfs_growfs -d "/dev/${LV%%-*}/${LV##*-}"
 ```
 
 ## Итоговые значения
