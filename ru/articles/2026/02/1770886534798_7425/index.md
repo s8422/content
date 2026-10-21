@@ -48,36 +48,48 @@ draft: 0
 
 ## Экспорт переменных
 
-- Экспортировать заранее подготовленные общие параметры в переменные окружения:
+- Получить значения для переменных:
 
 ```bash
-export PV='/dev/sdb'; export LV='data-documents'; export FS='ext4'
+pvs && lvs
+```
+
+- Экспортировать заранее подготовленные значения в переменные окружения:
+
+```bash
+export PV='/dev/sdb'; export VG='data'; export LV='documents'
 ```
 
 ### Параметры
 
 - `PV='/dev/sdb'` - имя физического тома (PV).
-- `LV='data-documents'` - имя группы логических томов (VG) `data` и логического тома (LV) `documents`.
-- `FS='ext4'` - файловая система, используемая на логическом томе (LV).
+- `VG='data'` - имя группы логических томов (VG).
+- `LV='documents'` - имя логического тома (LV).
 
-## Увеличение физического тома
+## Раздел
 
-- Провести сканирование указанного устройства на предмет изменённых параметров (в данном случае, размер диска) и увеличить физический том `/dev/sdb`:
+- Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `8 GB`:
 
 ```bash
-echo 1 > "/sys/block/${PV##*/}/device/rescan" && pvresize "${PV}"
+export SIZE='+8G'; echo 1 > "/sys/block/${PV}/device/rescan" && pvresize "${PV}" && lvextend -l "${SIZE}" "/dev/${VG}/${LV}"
 ```
 
-## Увеличение логического раздела
-
-- Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `8 GB` и расширить файловую систему `ext4`:
+- Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `100% GB`:
 
 ```bash
-s='+8G'; d="/dev/${LV%%-*}/${LV##*-}"; pvresize "${PV}" && lvextend -L "${s}" "${d}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "${d}"; else resize2fs "${d}"; fi; }
+export SIZE='+100%FREE'; echo 1 > "/sys/block/${PV##*/}/device/rescan" && pvresize "${PV}" && lvextend -l "${SIZE}" "/dev/${VG}/${LV}"
 ```
 
-- Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `100% GB` и расширить файловую систему `ext4`:
+## Файловая система
+
+- Увеличить файловую систему `xfs`:
 
 ```bash
-s='+100%FREE'; d="/dev/${LV%%-*}/${LV##*-}"; pvresize "${PV}" && lvextend -l "${s}" "${d}" && { if [[ "${FS}" == 'xfs' ]]; then xfs_growfs -d "${d}"; else resize2fs "${d}"; fi; }
+xfs_growfs -d "/dev/${VG}/${LV}"
+```
+
+- Увеличить файловую систему `ext4`:
+
+```bash
+resize2fs "/dev/${VG}/${LV}"
 ```

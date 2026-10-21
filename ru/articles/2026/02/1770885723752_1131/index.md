@@ -49,44 +49,53 @@ draft: 0
 
 ## Экспорт переменных
 
-- Экспортировать заранее подготовленные общие параметры в переменные окружения:
+- Экспортировать заранее подготовленные значения в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export LV='data-documents'; export FS='ext4'
+export PV='/dev/sdb'; export VG='data'; export LV='documents'; export FS='xfs'
 ```
 
 ### Параметры
 
-- `PV='/dev/sdb'` - диск, который будет использоваться в качестве физического тома (PV).
-- `LV='data-documents'` - имя группы логических томов (VG) `data` и логического тома (LV) `documents`.
-- `FS='ext4'` - файловая система, используемая на логическом томе (LV).
+- `PV='/dev/sdb'` - имя физического тома (PV).
+- `VG='data'` - имя группы логических томов (VG).
+- `LV='documents'` - имя логического тома (LV).
+- `FS='xfs'` - файловая система, используемая на логическом томе (LV).
 
 ## Физический том
 
 - Создать физический том и группу томов `data` на диске `/dev/sdb`:
 
 ```bash
-pvcreate "${PV}" && vgcreate "${LV%%-*}" "${PV}"
+pvcreate "${PV}" && vgcreate "${VG}" "${PV}"
 ```
 
 ## Логический том
 
-- Создать логический том `documents` размером `10 GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
+- Создать логический том `documents` размером `10 GB` в группе томов `data`:
 
 ```bash
-s='10G'; lvcreate -L "${s}" -n "${LV##*-}" "${LV%%-*}" && mkfs.${FS} "/dev/${LV%%-*}/${LV##*-}"
+export SIZE='10G'; lvcreate -n "${LV}" -L "${SIZE}" "${VG}"
 ```
 
-- Создать логический том `documents` размером `100% GB` в группе томов `data` и отформатировать в файловую систему `ext4`:
+- Создать логический том `documents` размером `100% GB` в группе томов `data`:
 
 ```bash
-s='100%FREE'; lvcreate -l "${s}" -n "${LV##*-}" "${LV%%-*}" && mkfs.${FS} "/dev/${LV%%-*}/${LV##*-}"
+export SIZE='100%FREE'; lvcreate -n "${LV}" -l "${SIZE}" "${VG}"
+```
+
+## Файловая система
+
+- Создать файловую систему:
+
+```bash
+mkfs.${FS} "/dev/${VG}/${LV}"
 ```
 
 ## Монтирование
 
-- Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/data-documents` и прописывание в `/etc/fstab` для `ext4`:
+- Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/documents` и прописывание в `/etc/fstab` для `ext4`:
 
 ```bash
-d="/dev/${LV%%-*}/${LV##*-}"; mkdir "/mnt/${LV}" && echo "${d} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "${d}" "/mnt/${LV}"
+mkdir "/mnt/${LV}" && echo "/dev/${VG}/${LV} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "/mnt/${LV}"
 ```
