@@ -52,19 +52,19 @@ draft: 0
 - Экспортировать заранее подготовленные значения в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export VG='data'; export LV='documents'; export FS='xfs'
+export PV='/dev/sdb'; export VG='data_vg1'; export LV='documents_lv1'; export FS='xfs'
 ```
 
 ### Параметры
 
 - `PV='/dev/sdb'` - имя физического тома (PV).
-- `VG='data'` - имя группы логических томов (VG).
-- `LV='documents'` - имя логического тома (LV).
+- `VG='data_vg1'` - имя группы логических томов (VG).
+- `LV='documents_lv1'` - имя логического тома (LV).
 - `FS='xfs'` - файловая система, используемая на логическом томе (LV).
 
 ## Физический том
 
-- Создать физический том и группу томов `data` на диске `/dev/sdb`:
+- Создать физический том и группу томов `data_vg1` на диске `/dev/sdb`:
 
 ```bash
 pvcreate "${PV}" && vgcreate "${VG}" "${PV}"
@@ -72,13 +72,13 @@ pvcreate "${PV}" && vgcreate "${VG}" "${PV}"
 
 ## Логический том
 
-- Создать логический том `documents` размером `10 GB` в группе томов `data`:
+- Создать логический том `documents_lv1` размером `10 GB` в группе томов `data_vg1`:
 
 ```bash
 export SIZE='10G'; lvcreate -n "${LV}" -L "${SIZE}" "${VG}"
 ```
 
-- Создать логический том `documents` размером `100% GB` в группе томов `data`:
+- Создать логический том `documents_lv1` размером `100% GB` в группе томов `data_vg1`:
 
 ```bash
 export SIZE='100%FREE'; lvcreate -n "${LV}" -l "${SIZE}" "${VG}"
@@ -94,7 +94,7 @@ mkfs.${FS} "/dev/${VG}/${LV}"
 
 ## Монтирование
 
-- Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/data-documents` и прописывание в `/etc/fstab`:
+- Монтирование логического тома `documents_lv1` группы томов `data_vg1` в директорию `/mnt/data_vg1-documents_lv1` и прописывание в `/etc/fstab`:
 
 ```bash
 mkdir "/mnt/${VG}-${LV}" && echo "/dev/${VG}/${LV} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "/mnt/${VG}-${LV}"
