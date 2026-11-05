@@ -94,8 +94,8 @@ mkfs.${FS} "/dev/${VG}/${LV}"
 
 ## Монтирование
 
-- Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/documents` и прописывание в `/etc/fstab` для `ext4`:
+- Монтирование логического тома `documents` группы томов `data` в директорию `/mnt/data-documents` и прописывание в `/etc/fstab`:
 
 ```bash
-mkdir "/mnt/${LV}" && echo "/dev/${VG}/${LV} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "/mnt/${LV}"
+mkdir "/mnt/${VG}-${LV}" && echo "/dev/${VG}/${LV} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "/mnt/${VG}-${LV}"
 ```
