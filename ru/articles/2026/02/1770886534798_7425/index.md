@@ -57,24 +57,24 @@ pvs && lvs
 - Экспортировать заранее подготовленные значения в переменные окружения:
 
 ```bash
-export PV='/dev/sdb'; export VG='data'; export LV='documents'
+export PV='/dev/sdb'; export VG='hostname_vg1'; export LV='data_lv1'
 ```
 
 ### Параметры
 
 - `PV='/dev/sdb'` - имя физического тома (PV).
-- `VG='data'` - имя группы логических томов (VG).
-- `LV='documents'` - имя логического тома (LV).
+- `VG='hostname_vg1'` - имя группы логических томов (VG).
+- `LV='data_lv1'` - имя логического тома (LV).
 
 ## Раздел
 
-- Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `8 GB`:
+- Увеличить размер логического раздела `data_lv1` в группе томов `hostname_vg1` диска `/dev/sdb` на `8 GB`:
 
 ```bash
 export SIZE='+8G'; echo 1 > "/sys/block/${PV}/device/rescan" && pvresize "${PV}" && lvextend -l "${SIZE}" "/dev/${VG}/${LV}"
 ```
 
-- Увеличить размер логического раздела `documents` в группе томов `data` диска `/dev/sdb` на `100% GB`:
+- Увеличить размер логического раздела `data_lv1` в группе томов `hostname_vg1` диска `/dev/sdb` на `100% GB`:
 
 ```bash
 export SIZE='+100%FREE'; echo 1 > "/sys/block/${PV##*/}/device/rescan" && pvresize "${PV}" && lvextend -l "${SIZE}" "/dev/${VG}/${LV}"
