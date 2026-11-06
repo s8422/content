@@ -97,5 +97,5 @@ mkfs.${FS} "/dev/${VG}/${LV}"
 - Монтирование логического тома `data_lv1` группы томов `hostname_vg1` в директорию `/mnt/hostname_vg1-data_lv1` и прописывание в `/etc/fstab`:
 
 ```bash
-mkdir "/mnt/${VG}-${LV}" && echo "/dev/${VG}/${LV} /mnt/${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "/mnt/${VG}-${LV}"
+mkdir "/mnt/${VG}-${LV}" && echo "/dev/${VG}/${LV} /mnt/${VG}-${LV} ${FS} defaults 0 0" >> '/etc/fstab' && mount "/dev/${VG}/${LV}" "/mnt/${VG}-${LV}"
 ```
